@@ -7,7 +7,7 @@ from torchvision import transforms
 import matplotlib.pyplot as plt
 
 sys.path.append(r'C:\Users\dk412\Desktop\David\Python Projects\HyperSuperResolution\prod_code')
-from utils import SRCNN, calculate_psnr #, preprocess_image, postprocess_image
+from SRCNN.prod_code.SRCNN_utils import SRCNN, calculate_psnr #, preprocess_image, postprocess_image
 
 def load_model(model_path, device):
 
