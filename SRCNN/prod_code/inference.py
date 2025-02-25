@@ -6,22 +6,16 @@ import numpy as np
 from torchvision import transforms
 import matplotlib.pyplot as plt
 
-# Add the directory containing utils.py to Python path
 sys.path.append(r'C:\Users\dk412\Desktop\David\Python Projects\HyperSuperResolution\prod_code')
 from utils import SRCNN, calculate_psnr #, preprocess_image, postprocess_image
 
 def load_model(model_path, device):
-    """
-    Load a trained model from checkpoint
-    """
-    # Initialize the model
+
     model = SRCNN().to(device)
     
-    # Load state dict
     checkpoint = torch.load(model_path, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
     
-    # Set to evaluation mode
     model.eval()
     
     print(f"Loaded model from {model_path}")
@@ -31,21 +25,15 @@ def load_model(model_path, device):
     return model
 
 def enhance_image(model, image_path, scale_factor=2, device='cpu', output_dir=r"C:\Users\dk412\Desktop\David\Python Projects\HyperSuperResolution\outputs\results"):
-    """
-    Enhance a single image using the trained model
-    """
-    # Create output directory if it doesn't exist
+
     os.makedirs(output_dir, exist_ok=True)
     
-    # Load and prepare image
     img = Image.open(image_path).convert('RGB')
     
-    # Create low-resolution version
     w, h = img.size
     low_res = img.resize((w//scale_factor, h//scale_factor), Image.BICUBIC)
     bicubic_upscaled = low_res.resize((w, h), Image.BICUBIC)
     
-    # Transform for model input
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -54,11 +42,9 @@ def enhance_image(model, image_path, scale_factor=2, device='cpu', output_dir=r"
     
     input_tensor = transform(bicubic_upscaled).unsqueeze(0).to(device)
     
-    # Get super-resolution output
     with torch.no_grad():
         output = model(input_tensor)
     
-    # Convert output tensor to image
     mean = torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1).to(device)
     std = torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1).to(device)
     output_img = output.squeeze().cpu()
@@ -66,7 +52,6 @@ def enhance_image(model, image_path, scale_factor=2, device='cpu', output_dir=r"
     output_img = torch.clamp(output_img, 0, 1)
     output_img = transforms.ToPILImage()(output_img)
     
-    # Save results
     original_filename = os.path.basename(image_path)
     name, ext = os.path.splitext(original_filename)
     
@@ -80,8 +65,7 @@ def enhance_image(model, image_path, scale_factor=2, device='cpu', output_dir=r"
     bicubic_upscaled.save(bicubic_output_path)
     output_img.save(sr_output_path)
     
-    # Calculate PSNR values
-    # Convert to numpy arrays in range [0, 255]
+ 
     img_np = np.array(img)
     bicubic_np = np.array(bicubic_upscaled)
     sr_np = np.array(output_img)
@@ -94,7 +78,6 @@ def enhance_image(model, image_path, scale_factor=2, device='cpu', output_dir=r"
     print(f"PSNR for SRCNN: {sr_psnr:.2f} dB")
     print(f"PSNR improvement: {sr_psnr - bicubic_psnr:.2f} dB")
     
-    # Create a side-by-side comparison with PSNR values
     fig, axes = plt.subplots(1, 4, figsize=(20, 5))
     
     axes[0].imshow(np.array(img))
@@ -129,12 +112,8 @@ def enhance_image(model, image_path, scale_factor=2, device='cpu', output_dir=r"
     }
 
 def batch_evaluate(model, image_dir, scale_factor=2, device='cpu', output_dir="results"):
-    """
-    Evaluate model on a directory of images and calculate average PSNR
-    """
     image_files = [f for f in os.listdir(image_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
     
-    # Track PSNR values
     bicubic_psnrs = []
     sr_psnrs = []
     
@@ -145,7 +124,6 @@ def batch_evaluate(model, image_dir, scale_factor=2, device='cpu', output_dir="r
         bicubic_psnrs.append(result["bicubic_psnr"])
         sr_psnrs.append(result["sr_psnr"])
     
-    # Calculate average PSNR
     avg_bicubic_psnr = sum(bicubic_psnrs) / len(bicubic_psnrs)
     avg_sr_psnr = sum(sr_psnrs) / len(sr_psnrs)
     avg_improvement = avg_sr_psnr - avg_bicubic_psnr
@@ -156,7 +134,6 @@ def batch_evaluate(model, image_dir, scale_factor=2, device='cpu', output_dir="r
     print(f"Average SRCNN PSNR: {avg_sr_psnr:.2f} dB")
     print(f"Average PSNR improvement: {avg_improvement:.2f} dB")
     
-    # Save results to a text file
     results_file = os.path.join(output_dir, "evaluation_results.txt")
     with open(results_file, 'w') as f:
         f.write("===== EVALUATION RESULTS =====\n")

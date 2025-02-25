@@ -33,13 +33,7 @@ class SRCNN(nn.Module):
 # Dataset Class
 class Set14Dataset(Dataset):
     def __init__(self, root_dir, scale_factor=2, transform=None, image_size=(256, 256)):
-        """
-        Args:
-            root_dir (string): Directory with all the images.
-            scale_factor (int): Factor to downscale and upscale images.
-            transform (callable, optional): Optional transform to be applied to images.
-            image_size (tuple): Size to resize all images to (width, height).
-        """
+
         self.root_dir = root_dir
         self.scale_factor = scale_factor
         self.transform = transform
@@ -53,10 +47,8 @@ class Set14Dataset(Dataset):
         img_path = os.path.join(self.root_dir, self.image_files[idx])
         image = Image.open(img_path).convert('RGB')
         
-        # Resize all images to the same size
         image = image.resize(self.image_size, Image.BICUBIC)
         
-        # Create low-resolution image
         low_res = image.resize((self.image_size[0]//self.scale_factor, 
                               self.image_size[1]//self.scale_factor), 
                               Image.BICUBIC)
@@ -68,7 +60,6 @@ class Set14Dataset(Dataset):
             
         return low_res, high_res
 
-# Utility Functions
 def calculate_psnr(img1, img2):
     mse = np.mean((img1 - img2) ** 2)
     if mse == 0:
@@ -138,11 +129,4 @@ def train_model(model, train_loader, val_loader, num_epochs, device, save_dir=r'
         save_checkpoint(checkpoint, val_loss < best_val_loss, save_dir)
         best_val_loss = min(val_loss, best_val_loss)
 
-"""
-def calculate_psnr(img1, img2):
-    mse = np.mean((img1 - img2) ** 2)
-    if mse == 0:
-        return float('inf')
-    return 20 * np.log10(255.0 / np.sqrt(mse))
-"""
 
