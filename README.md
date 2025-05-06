@@ -6,7 +6,7 @@ This repository implements HyperSRCNN, a hypernetwork-based approach to single i
 
 HyperSRCNN addresses a key limitation in traditional super-resolution models: the need to train separate models for different upscaling factors. Instead, HyperSRCNN uses a hypernetwork architecture that dynamically generates weights for a target SRCNN model conditioned on the desired scale factor, enabling a single model to handle multiple scaling operations efficiently.
 
-![HyperSRCNN Architecture](https://via.placeholder.com/800x400?text=HyperSRCNN+Architecture)
+![HyperSRCNN Architecture]([https://via.placeholder.com/800x400?text=HyperSRCNN+Architecture](https://github.com/davidkurtenb/Hyper-Super-Resolution/blob/main/ISR/HyperSRCNN/outputs/hypernetwork_detailed.png))
 
 ## 🔑 Key Features
 
